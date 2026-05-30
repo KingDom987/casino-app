@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
+
+<title>3D Slots</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+}
+
+body{
+margin:0;
+font-family:Arial,sans-serif;
+background:radial-gradient(circle at top,#1a1a1a,#000);
+color:gold;
+text-align:center;
+min-height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:20px;
+}
+
+.box{
+width:100%;
+max-width:420px;
+padding:25px;
+background:rgba(20,20,20,0.95);
+border-radius:20px;
+box-shadow:0 0 40px rgba(255,215,0,0.3);
+}
+
+h1{
+margin-top:0;
+margin-bottom:25px;
+font-size:32px;
+text-shadow:0 0 20px gold;
+}
+
+.row{
+display:flex;
+justify-content:center;
+gap:10px;
+perspective:800px;
+margin-bottom:15px;
+}
+
+.reel{
+width:75px;
+height:75px;
+overflow:hidden;
+border-radius:12px;
+background:#111;
+position:relative;
+box-shadow:
+inset 0 0 20px black,
+0 0 10px rgba(255,215,0,0.2);
+}
+
+.strip{
+position:absolute;
+width:100%;
+top:0;
+transition:
+transform 0.9s cubic-bezier(.17,.67,.83,.67);
+}
+
+.item{
+height:75px;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:42px;
+}
+
+#customBet{
+width:100%;
+padding:14px;
+margin-top:10px;
+border-radius:10px;
+border:none;
+font-size:17px;
+text-align:center;
+background:#222;
+color:white;
+}
+
+button{
+width:100%;
+padding:15px;
+margin-top:12px;
+border:none;
+border-radius:10px;
+background:gold;
+color:black;
+font-size:17px;
+font-weight:bold;
+cursor:pointer;
+transition:0.2s;
+}
+
+button:hover{
+background:orange;
+transform:scale(1.02);
+}
+
+.Balanca{
+margin-top:15px;
+color:white;
+font-size:20px;
+}
+
+@media (max-width:500px){
+
+h1{
+font-size:26px;
+}
+
+.reel{
+width:65px;
+height:65px;
+}
+
+.item{
+height:65px;
+font-size:36px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="box">
+
+<h1>🎰 SLOT MACHINE</h1>
+
+<div class="row">
+
+<div class="reel">
+<div class="strip" id="r1"></div>
+</div>
+
+<div class="reel">
+<div class="strip" id="r2"></div>
+</div>
+
+<div class="reel">
+<div class="strip" id="r3"></div>
+</div>
+
+<div class="reel">
+<div class="strip" id="r4"></div>
+</div>
+
+</div>
+
+<input
+type="number"
+id="customBet"
+placeholder="Enter Bet Amount"
+min="1"
+/>
+
+<button onclick="spin()">
+SPIN 🎲
+</button>
+
+<button onclick="toggleMusic()"
+id="musicBtn">
+
+🎵 MUSIC ON
+
+</button>
+
+<div class="Balanca"
+id="Balanca">
+
+</div>
+
+</div>
+
+<audio id="bgMusic" loop>
+
+<source src="sounds/love.mp3"
+type="audio/mpeg">
+
+</audio>
+
+<script>
+
+/* RESET BALANCA */
+
+localStorage.setItem("Balanca",0);
+
+/* BALANCA */
+
+let Balanca =
+parseInt(
+localStorage.getItem(
+"Balanca"
+)
+);
+
+document.getElementById(
+"Balanca"
+).innerText =
+"Balanca: $" + Balanca;
+
+/* SYMBOLS */
+
+const symbols =
+["🍒","🍋","🍊","🍉"];
+
+/* BUILD */
+
+function build(id){
+
+let el =
+document.getElementById(id);
+
+el.innerHTML = "";
+
+for(let i = 0; i < 20; i++){
+
+let div =
+document.createElement("div");
+
+div.className =
+"item";
+
+div.innerText =
+symbols[
+Math.floor(
+Math.random() *
+symbols.length
+)];
+
+el.appendChild(div);
+}
+}
+
+/* INIT */
+
+["r1","r2","r3","r4"]
+.forEach(build);
+
+/* MUSIC */
+
+let music =
+document.getElementById(
+"bgMusic"
+);
+
+let musicOn = true;
+
+music.volume = 0.3;
+
+document.addEventListener(
+"click",
+() => {
+
+if(musicOn){
+
+music.play();
+}
+
+},
+{ once:true }
+);
+
+/* TOGGLE */
+
+function toggleMusic(){
+
+if(musicOn){
+
+music.pause();
+
+musicOn = false;
+
+document.getElementById(
+"musicBtn"
+).innerText =
+"🎵 MUSIC OFF";
+
+}else{
+
+music.play();
+
+musicOn = true;
+
+document.getElementById(
+"musicBtn"
+).innerText =
+"🎵 MUSIC ON";
+}
+}
+
+/* WIN RATE */
+
+function isWin(){
+
+return Math.random() < 0.000;
+}
+
+/* SPIN */
+
+function spin(){
+
+let bet =
+parseInt(
+document.getElementById(
+"customBet"
+).value
+);
+
+if(
+!bet ||
+bet <= 0
+){
+
+alert(
+"Enter valid bet"
+);
+
+return;
+}
+
+if(Balanca < bet){
+
+alert(
+"Not enough coins"
+);
+
+return;
+}
+
+Balanca -= bet;
+
+document.getElementById(
+"Balanca"
+).innerText =
+"Balanca: $" + Balanca;
+
+localStorage.setItem(
+"Balanca",
+Balanca
+);
+
+let reels =
+["r1","r2","r3","r4"];
+
+reels.forEach(id => {
+
+build(id);
+
+document.getElementById(id)
+.style.transform =
+"translateY(-1200px)";
+});
+
+setTimeout(() => {
+
+reels.forEach(id => {
+
+let el =
+document.getElementById(id);
+
+el.style.transform =
+"translateY(0px)";
+
+let symbol =
+symbols[
+Math.floor(
+Math.random() *
+symbols.length
+)];
+
+el.innerHTML =
+`<div class="item">
+${symbol}
+</div>`;
+});
+
+if(isWin()){
+
+Balanca += bet * 20;
+
+alert(
+"🎉 JACKPOT! YOU WON $" +
+(bet * 20)
+);
+
+}else{
+
+alert(
+"💀 LOST $" + bet
+);
+}
+
+document.getElementById(
+"Balanca"
+).innerText =
+"Balanca: $" + Balanca;
+
+localStorage.setItem(
+"Balanca",
+Balanca
+);
+
+},900);
+}
+
+</script>
+
+</body>
+</html>

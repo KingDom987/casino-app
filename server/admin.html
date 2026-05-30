@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel</title>
+</head>
+
+<body style="font-family:Arial;background:#111;color:white;padding:20px;">
+
+<h2>Admin Panel 💰 Users List</h2>
+
+<button onclick="loadUsers()">LOAD USERS</button>
+
+<br><br>
+
+<div id="users"></div>
+
+<script>
+
+const API = "http://localhost:3001";
+
+async function loadUsers() {
+    const res = await fetch(API + "/users");
+    const users = await res.json();
+
+    let html = "";
+
+    users.forEach(user => {
+        html += `
+        <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
+            <b>${user.username}</b><br>
+            Balance: $${user.balance}<br>
+            ID: ${user._id}<br><br>
+
+            <input id="a-${user._id}" placeholder="amount">
+
+            <button onclick="addBalance('${user._id}')">+ ADD</button>
+            <button onclick="removeBalance('${user._id}')">- REMOVE</button>
+        </div>
+        `;
+    });
+
+    document.getElementById("users").innerHTML = html;
+}
+
+async function addBalance(userId) {
+    let amount = document.getElementById("a-" + userId).value;
+
+    await fetch(API + "/admin/add-balance", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "admin-password": "1234"
+        },
+        body: JSON.stringify({
+            userId,
+            amount
+        })
+    });
+
+    loadUsers();
+}
+
+async function removeBalance(userId) {
+    let amount = document.getElementById("a-" + userId).value;
+
+    await fetch(API + "/admin/remove-balance", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "admin-password": "1234"
+        },
+        body: JSON.stringify({
+            userId,
+            amount
+        })
+    });
+
+    loadUsers();
+}
+
+</script>
+
+</body>
+</html>
