@@ -38,7 +38,7 @@ app.post("/register", async (req, res) => {
       username,
       email,
       password,
-      balance: 1000
+      balance: 0
     });
 
     await user.save();
@@ -81,6 +81,12 @@ app.post("/login", async (req, res) => {
       error: err.message
     });
   }
+});
+
+/* USERS */
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.json(users);
 });
 
 /* BALANCE */
