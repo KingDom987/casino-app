@@ -17,7 +17,7 @@
 
 <script>
 
-const API = "http://localhost:3001";
+const API = "https://casino-app-production-d8ee.up.railway.app";
 
 async function loadUsers() {
     const res = await fetch(API + "/users");
@@ -52,10 +52,7 @@ async function addBalance(userId) {
             "Content-Type": "application/json",
             "admin-password": "1234"
         },
-        body: JSON.stringify({
-            userId,
-            amount
-        })
+        body: JSON.stringify({ userId, amount })
     });
 
     loadUsers();
@@ -70,10 +67,7 @@ async function removeBalance(userId) {
             "Content-Type": "application/json",
             "admin-password": "1234"
         },
-        body: JSON.stringify({
-            userId,
-            amount
-        })
+        body: JSON.stringify({ userId, amount })
     });
 
     loadUsers();
