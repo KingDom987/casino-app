@@ -1,107 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Blackjack</title>
-
 <style>
-
 *{box-sizing:border-box;margin:0;padding:0;}
-
-body{
-font-family:Arial,sans-serif;
-background:radial-gradient(circle at top,#1a1a1a,#000);
-color:white;
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-padding:20px;
-}
-
-.box{
-width:100%;
-max-width:900px;
-background:rgba(20,20,20,0.95);
-padding:30px;
-border-radius:20px;
-box-shadow:0 0 40px rgba(255,215,0,0.25);
-text-align:center;
-}
-
+body{font-family:Arial,sans-serif;background:radial-gradient(circle at top,#1a1a1a,#000);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
+.box{width:100%;max-width:900px;background:rgba(20,20,20,0.95);padding:30px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.25);text-align:center;}
 h1{color:gold;font-size:50px;margin-bottom:20px;text-shadow:0 0 20px gold;}
 .Balanca{font-size:22px;margin-bottom:20px;color:gold;}
-
-input{
-width:100%;padding:15px;border:none;border-radius:12px;
-font-size:18px;margin-bottom:20px;text-align:center;background:#222;color:white;
-}
-
+input{width:100%;padding:15px;border:none;border-radius:12px;font-size:18px;margin-bottom:20px;text-align:center;background:#222;color:white;}
 .cards{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin:20px 0;}
-
-.card{
-width:90px;height:130px;background:white;border-radius:12px;
-display:flex;justify-content:center;align-items:center;
-font-size:32px;font-weight:bold;color:black;
-box-shadow:0 0 15px rgba(255,255,255,0.2);
-}
-
+.card{width:90px;height:130px;background:white;border-radius:12px;display:flex;justify-content:center;align-items:center;font-size:32px;font-weight:bold;color:black;box-shadow:0 0 15px rgba(255,255,255,0.2);}
 .section{margin-top:25px;}
 .score{margin-top:10px;font-size:22px;color:gold;}
 .buttons{display:flex;gap:15px;margin-top:25px;flex-wrap:wrap;}
-
-button{
-flex:1;padding:15px;border:none;border-radius:12px;
-font-size:18px;font-weight:bold;cursor:pointer;transition:0.2s;
-}
-
+button{flex:1;padding:15px;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;transition:0.2s;}
 .start-btn{background:gold;color:black;}
 .hit-btn{background:limegreen;color:white;}
 .stand-btn{background:red;color:white;}
-
 button:hover{transform:scale(1.03);}
 #result{margin-top:25px;font-size:32px;font-weight:bold;}
-
 </style>
-
 </head>
-
 <body>
-
 <div class="box">
-
 <h1>🃏 BLACKJACK</h1>
-
 <div class="Balanca" id="Balanca">Balanca: $0</div>
 <input type="number" id="betInput" placeholder="Enter Bet Amount"/>
-
 <div class="section">
   <h2>DEALER</h2>
   <div class="cards" id="dealerCards"></div>
   <div class="score" id="dealerScore"></div>
 </div>
-
 <div class="section">
   <h2>PLAYER</h2>
   <div class="cards" id="playerCards"></div>
   <div class="score" id="playerScore"></div>
 </div>
-
 <div class="buttons">
   <button class="start-btn" onclick="startGame()">START</button>
   <button class="hit-btn" onclick="hit()">HIT</button>
   <button class="stand-btn" onclick="stand()">STAND</button>
 </div>
-
 <div id="result"></div>
-
 </div>
 
 <script>
-
 const API = "https://casino-app-production-d8ee.up.railway.app";
 
 let userData = localStorage.getItem("user");
@@ -125,37 +71,46 @@ async function loadBalance(){
 
 loadBalance();
 
-const cards = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+/* KARTA ME VLERA */
+const deck = [];
+const suits = ["♠","♥","♦","♣"];
+const values = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+
+function buildDeck(){
+  deck.length = 0;
+  suits.forEach(s => values.forEach(v => deck.push(v)));
+  for(let i = deck.length-1; i > 0; i--){
+    let j = Math.floor(Math.random()*(i+1));
+    [deck[i],deck[j]] = [deck[j],deck[i]];
+  }
+}
 
 function getCard(){
-  return cards[Math.floor(Math.random() * cards.length)];
+  if(deck.length === 0) buildDeck();
+  return deck.pop();
 }
 
 function getValue(card){
   if(card === "A") return 11;
-  if(card === "K" || card === "Q" || card === "J") return 10;
+  if(["K","Q","J"].includes(card)) return 10;
   return parseInt(card);
 }
 
 function getTotal(hand){
-  let total = 0;
-  let aces = 0;
-  hand.forEach(card => {
-    total += getValue(card);
-    if(card === "A") aces++;
-  });
+  let total = 0, aces = 0;
+  hand.forEach(c => { total += getValue(c); if(c==="A") aces++; });
   while(total > 21 && aces > 0){ total -= 10; aces--; }
   return total;
 }
 
 function render(){
-  let playerDiv = document.getElementById("playerCards");
-  playerDiv.innerHTML = "";
-  player.forEach(card => { playerDiv.innerHTML += `<div class="card">${card}</div>`; });
+  let pd = document.getElementById("playerCards");
+  pd.innerHTML = "";
+  player.forEach(c => { pd.innerHTML += `<div class="card">${c}</div>`; });
 
-  let dealerDiv = document.getElementById("dealerCards");
-  dealerDiv.innerHTML = "";
-  dealer.forEach(card => { dealerDiv.innerHTML += `<div class="card">${card}</div>`; });
+  let dd = document.getElementById("dealerCards");
+  dd.innerHTML = "";
+  dealer.forEach(c => { dd.innerHTML += `<div class="card">${c}</div>`; });
 
   document.getElementById("playerScore").innerText = "Score: " + getTotal(player);
   document.getElementById("dealerScore").innerText = "Score: " + getTotal(dealer);
@@ -163,7 +118,6 @@ function render(){
 
 async function startGame(){
   currentBet = parseInt(document.getElementById("betInput").value);
-
   if(!currentBet || currentBet <= 0){ alert("Enter valid bet"); return; }
   if(Balanca < currentBet){ alert("Not enough balance"); return; }
 
@@ -173,12 +127,12 @@ async function startGame(){
     body: JSON.stringify({ userId: user._id, amount: currentBet })
   });
   const betData = await betRes.json();
-
   if(!betData.success){ alert("Not enough balance"); return; }
 
   Balanca = betData.balance;
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
+  buildDeck();
   gameActive = true;
   player = [getCard(), getCard()];
   dealer = [getCard(), getCard()];
@@ -190,7 +144,6 @@ function hit(){
   if(!gameActive) return;
   player.push(getCard());
   render();
-
   if(getTotal(player) > 21){
     gameActive = false;
     document.getElementById("result").innerHTML = "💀 BUST! YOU LOST";
@@ -203,21 +156,29 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
-  /* NESE LOJTARI KA 21 - DEALER GJITHMON FITON */
-  if(playerTotal === 21){
-    dealer = ["A","K"];
-    render();
-    document.getElementById("result").innerHTML = "💀 DEALER BLACKJACK! DEALER WINS";
-    document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
-    return;
+  /* DEALER MERR KARTA SIPAS RREGULLAVE - NDALON NE 17 */
+  while(getTotal(dealer) < 17){
+    dealer.push(getCard());
   }
 
-  /* DEALERI MERR KARTA DERI SA E KALON LOJTARIN */
-  while(getTotal(dealer) <= playerTotal){
-    dealer.push(getCard());
-    if(getTotal(dealer) > 21){
+  let dealerTotal = getTotal(dealer);
+
+  /* DEALER GJITHMON FITON - MANIPULOJME REZULTATIN */
+  if(dealerTotal > 21 || dealerTotal < playerTotal){
+    /* DEALER BUST OSE KA ME PAK - SHTOJME KARTE TE VOGEL */
+    while(getTotal(dealer) > 21){
       dealer.pop();
-      dealer.push("2");
+    }
+    /* SIGUROHEMI QE DEALER TE JETE MBI LOJTARIN */
+    while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 20){
+      let smallCards = ["2","3","4","5","6","7"];
+      dealer.push(smallCards[Math.floor(Math.random()*smallCards.length)]);
+    }
+    /* NESE PRAP BUST BEJE 20 */
+    if(getTotal(dealer) > 21){
+      dealer = [];
+      dealer.push("K");
+      dealer.push("Q");
     }
   }
 
@@ -225,8 +186,6 @@ async function stand(){
   document.getElementById("result").innerHTML = "💀 DEALER WINS";
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 }
-
 </script>
-
 </body>
 </html>
