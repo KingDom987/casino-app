@@ -203,15 +203,15 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
-  /* DEALERI ARRIN GJITHMON ME SHUM SE LOJTARI */
-  while(getTotal(dealer) <= playerTotal){
+  /* DEALERI MERR KARTA DERI SA E KALON LOJTARIN */
+  while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 21){
     dealer.push(getCard());
-    if(getTotal(dealer) > 21){
-      /* NESE BUST ZEVEND ME KARTE TE VOGEL */
-      dealer.pop();
-      dealer.push("2");
-      break;
-    }
+  }
+
+  /* NESE DEALER KALON 21 ZEVEND KARTËN E FUNDIT ME TË VOGËL */
+  while(getTotal(dealer) > 21){
+    dealer.pop();
+    dealer.push("2");
   }
 
   render();
