@@ -11,7 +11,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..')));
 
-mongoose.connect("mongodb://127.0.0.1:27017/imperium")
+mongoose.connect(process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/imperium")
 .then(() => {
     console.log("MongoDB Connected");
 })
@@ -142,6 +142,8 @@ app.post("/admin/remove-balance", async (req, res) => {
 
 });
 
-app.listen(3001, () => {
-    console.log("SERVER RUNNING 3001");
+const PORT = process.env.PORT || 3001;
+
+app.listen(PORT, () => {
+    console.log("SERVER RUNNING " + PORT);
 });
