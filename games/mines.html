@@ -87,13 +87,8 @@ transform:scale(1.05);
 background:#333;
 }
 
-.safe{
-background:limegreen;
-}
-
-.mine{
-background:red;
-}
+.safe{background:limegreen;}
+.mine{background:red;}
 
 .controls{
 margin-top:25px;
@@ -162,61 +157,39 @@ color:gold;
 
 const API = "https://casino-app-production-d8ee.up.railway.app";
 
-/* USER */
 let user = null;
+try { user = JSON.parse(localStorage.getItem("user")); } catch(e){ user = null; }
 
-try {
-  user = JSON.parse(localStorage.getItem("user"));
-} catch(e){
-  user = null;
-}
-
-/* GAME STATE */
 let balance = 0;
 let gameActive = false;
 let currentBet = 0;
 let multiplier = 1;
 
-/* LOAD BALANCE FROM BACKEND */
 async function loadBalance(){
-
   if(!user || !user._id) return;
-
   const res = await fetch(API + "/balance/" + user._id);
   const data = await res.json();
-
   balance = data.balance || 0;
   updateBalance();
 }
 
-/* UPDATE UI */
 function updateBalance(){
-  document.getElementById("balance").innerHTML =
-    "Balance: $" + balance;
+  document.getElementById("balance").innerHTML = "Balance: $" + balance;
 }
 
-/* INIT */
 loadBalance();
 
-/* GRID */
 const grid = document.getElementById("grid");
 
 for(let i = 0; i < 25; i++){
-
   let tile = document.createElement("div");
   tile.className = "tile";
   tile.innerHTML = "?";
-
-  tile.onclick = function(){
-    pickTile(tile);
-  };
-
+  tile.onclick = function(){ pickTile(tile); };
   grid.appendChild(tile);
 }
 
-/* START GAME */
-function startGame(){
-
+async function startGame(){
   currentBet = parseInt(document.getElementById("betInput").value);
 
   if(!currentBet || currentBet <= 0){
@@ -229,7 +202,19 @@ function startGame(){
     return;
   }
 
-  balance -= currentBet;
+  const betRes = await fetch(API + "/bet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: user._id, amount: currentBet })
+  });
+  const betData = await betRes.json();
+
+  if(!betData.success){
+    alert("Not enough balance");
+    return;
+  }
+
+  balance = betData.balance;
   updateBalance();
 
   gameActive = true;
@@ -242,58 +227,45 @@ function startGame(){
     tile.className = "tile";
     tile.innerHTML = "?";
   });
-
 }
 
-/* PICK TILE */
 function pickTile(tile){
-
   if(!gameActive) return;
+  if(tile.classList.contains("safe") || tile.classList.contains("mine")) return;
 
-  if(tile.classList.contains("safe") || tile.classList.contains("mine")){
-    return;
-  }
-
-  let safe = Math.random() < 0.01;
+  let safe = false;
 
   if(safe){
-
     tile.classList.add("safe");
     tile.innerHTML = "💎";
-
     multiplier += 0.5;
-
-    document.getElementById("multi").innerHTML =
-      "Multiplier: x" + multiplier.toFixed(1);
-
+    document.getElementById("multi").innerHTML = "Multiplier: x" + multiplier.toFixed(1);
   } else {
-
     tile.classList.add("mine");
     tile.innerHTML = "💣";
-
     gameActive = false;
-
-    document.getElementById("result").innerHTML =
-      "💀 YOU LOST";
+    document.getElementById("result").innerHTML = "💀 YOU LOST";
   }
-
 }
 
-/* CASHOUT */
-function cashout(){
-
+async function cashout(){
   if(!gameActive) return;
 
   let winnings = Math.floor(currentBet * multiplier);
 
-  balance += winnings;
+  const winRes = await fetch(API + "/win", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: user._id, amount: winnings })
+  });
+  const winData = await winRes.json();
 
+  balance = winData.balance;
   updateBalance();
 
   gameActive = false;
 
-  document.getElementById("result").innerHTML =
-    "🎉 CASHOUT $" + winnings;
+  document.getElementById("result").innerHTML = "🎉 CASHOUT $" + winnings;
 }
 
 </script>

@@ -194,7 +194,7 @@ async function rollDice(){
       let choice = document.getElementById("choice").value;
       dice.innerHTML = number;
 
-      let win = (choice === "over" && number > 50) || (choice === "under" && number < 50);
+      let win = false;
 
       if(win){
         let winnings = bet * 2;

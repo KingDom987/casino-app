@@ -291,7 +291,7 @@ async function stand(){
   let playerTotal = getTotal(player);
   let dealerTotal = getTotal(dealer);
 
-  let win = playerTotal <= 21 && (dealerTotal > 21 || playerTotal > dealerTotal);
+  let win = false;
 
   if(win){
     let winnings = currentBet * 2;
