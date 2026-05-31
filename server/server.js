@@ -143,7 +143,10 @@ app.post("/admin/remove-balance", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-
+app.get("/balance/:id", async (req, res) => {
+    const user = await User.findById(req.params.id);
+    res.json({ balance: user ? user.balance : 0 });
+});
 app.listen(PORT, () => {
     console.log("SERVER RUNNING " + PORT);
 });

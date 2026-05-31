@@ -225,7 +225,7 @@ transform:scale(1.03);
 
 <script>
 
-/* USER */
+const API = "https://casino-app-production-d8ee.up.railway.app";
 
 let userData = localStorage.getItem("user");
 let user = null;
@@ -236,17 +236,16 @@ try {
   user = null;
 }
 
-let balance = (user && user.balance !== undefined) ? user.balance : 0;
-
-/* SHOW USER */
-
 document.getElementById("user").innerText =
   "👤 " + (user && user.username ? user.username : "Player");
 
-/* SHOW BALANCE */
-
-document.getElementById("Balanca").innerText =
-  "💰 $" + balance;
+if(user && user._id){
+  fetch(API + "/balance/" + user._id)
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById("Balanca").innerText = "💰 $" + (data.balance || 0);
+  });
+}
 
 </script>
 
