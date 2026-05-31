@@ -72,26 +72,15 @@ async function loadBalance(){
 loadBalance();
 
 /* KARTA TE VOGLA PER DEALER - KURRE BUST */
-const smallCards = ["2","3","4","5","6","7"];
-/* KARTA TE MEDHA PER LOJTARIN - BUST SHPEJT */
-const bigCards = ["10","J","Q","K"];
-const allCards = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
-
-function getPlayerCard(){
-  /* LOJTARIT I JAPIM KARTA TE MEDHA QE TE BUST */
-  if(Math.random() < 0.7){
-    return bigCards[Math.floor(Math.random()*bigCards.length)];
-  }
-  return allCards[Math.floor(Math.random()*allCards.length)];
-}
-
 function getDealerCard(){
-  /* DEALERIT I JAPIM KARTA TE VOGLA */
-  return smallCards[Math.floor(Math.random()*smallCards.length)];
+  let safe = ["2","3","4","5","6"];
+  return safe[Math.floor(Math.random()*safe.length)];
 }
 
-function getRandomCard(){
-  return allCards[Math.floor(Math.random()*allCards.length)];
+/* KARTA TE MEDHA PER LOJTARIN - BUST SHPEJT */
+function getPlayerCard(){
+  let big = ["10","J","Q","K"];
+  return big[Math.floor(Math.random()*big.length)];
 }
 
 function getValue(card){
@@ -137,9 +126,9 @@ async function startGame(){
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
   gameActive = true;
-  /* LOJTARIT I JAPIM 2 KARTA NORMALE */
-  player = [getRandomCard(), getRandomCard()];
-  /* DEALERIT I JAPIM 2 KARTA TE VOGLA */
+  /* LOJTARIT 2 KARTA TE MEDHA - SHPEJT BUST */
+  player = [getPlayerCard(), getPlayerCard()];
+  /* DEALERIT 2 KARTA TE VOGLA */
   dealer = [getDealerCard(), getDealerCard()];
   document.getElementById("result").innerHTML = "";
   render();
@@ -147,7 +136,7 @@ async function startGame(){
 
 function hit(){
   if(!gameActive) return;
-  /* LOJTARIT I JAPIM KARTE TE MADHE - BUST SHPEJT */
+  /* LOJTARIT KARTE TE MADHE - BUST */
   player.push(getPlayerCard());
   render();
   if(getTotal(player) > 21){
@@ -157,25 +146,4 @@ function hit(){
 }
 
 async function stand(){
-  if(!gameActive) return;
-  gameActive = false;
-
-  let playerTotal = getTotal(player);
-
-  /* DEALER MERR KARTA TE VOGLA DERI NE 17 */
-  while(getTotal(dealer) < 17){
-    dealer.push(getDealerCard());
-  }
-
-  /* NESE DEALER KA ME PAK SE LOJTARI - SHTO KARTA TE VOGLA */
-  while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 20){
-    dealer.push(getDealerCard());
-  }
-
-  render();
-  document.getElementById("result").innerHTML = "💀 DEALER WINS";
-  document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
-}
-</script>
-</body>
-</html>
+  if(!gameActive)
