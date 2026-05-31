@@ -181,7 +181,7 @@ transform:scale(1.03);
       <div class="icon">🎰</div>
       <h2>3D Slots</h2>
       <p>Spin the reels and win jackpots.</p>
-      <button class="play-btn" onclick="window.location.href='/games/slots.html'">PLAY SLOTS</button>
+      <button class="play-btn" onclick="go('/games/slots.html')">PLAY SLOTS</button>
     </div>
   </div>
 
@@ -190,14 +190,15 @@ transform:scale(1.03);
     <div class="card">
       <div class="icon">🃏</div>
       <h2>Blackjack</h2>
-      <p>Beat the dealer and reach 21 without going bust.</p>
-      <button class="play-btn" onclick="window.location.href='/games/blackjack.html'">PLAY BLACKJACK</button>
+      <p>Beat the dealer and reach 21.</p>
+      <button class="play-btn" onclick="go('/games/blackjack.html')">PLAY BLACKJACK</button>
     </div>
+
     <div class="card">
       <div class="icon">🎴</div>
       <h2>Poker</h2>
-      <p>Play poker against the dealer and test your cards.</p>
-      <button class="play-btn" onclick="window.location.href='/games/poker.html'">PLAY POKER</button>
+      <p>Test your poker skills.</p>
+      <button class="play-btn" onclick="go('/games/poker.html')">PLAY POKER</button>
     </div>
   </div>
 
@@ -206,8 +207,8 @@ transform:scale(1.03);
     <div class="card">
       <div class="icon">💣</div>
       <h2>Mines</h2>
-      <p>Pick tiles carefully and avoid the bombs.</p>
-      <button class="play-btn" onclick="window.location.href='/games/mines.html'">PLAY MINES</button>
+      <p>Avoid bombs and win big.</p>
+      <button class="play-btn" onclick="go('/games/mines.html')">PLAY MINES</button>
     </div>
   </div>
 
@@ -216,8 +217,8 @@ transform:scale(1.03);
     <div class="card">
       <div class="icon">🎲</div>
       <h2>Dice</h2>
-      <p>Roll the dice and test your luck.</p>
-      <button class="play-btn" onclick="window.location.href='/games/dice.html'">PLAY DICE</button>
+      <p>Roll and test luck.</p>
+      <button class="play-btn" onclick="go('/games/dice.html')">PLAY DICE</button>
     </div>
   </div>
 
@@ -227,25 +228,39 @@ transform:scale(1.03);
 
 const API = "https://casino-app-production-d8ee.up.railway.app";
 
-let userData = localStorage.getItem("user");
 let user = null;
 
 try {
-  user = JSON.parse(userData);
-} catch(e) {
+  user = JSON.parse(localStorage.getItem("user"));
+} catch(e){
   user = null;
 }
 
+// USER NAME
 document.getElementById("user").innerText =
-  "👤 " + (user && user.username ? user.username : "Player");
+  "👤 " + (user?.username || "Player");
 
-if(user && user._id){
-  fetch(API + "/balance/" + user._id)
-  .then(res => res.json())
-  .then(data => {
-    document.getElementById("Balanca").innerText = "💰 $" + (data.balance || 0);
-  });
+// NAV FUNCTION
+function go(url){
+  window.location.href = url;
 }
+
+// 🔥 SINGLE SOURCE OF TRUTH FOR BALANCE
+async function updateBalanceUI(){
+
+  if(!user || !user._id) return;
+
+  const res = await fetch(API + "/balance/" + user._id);
+  const data = await res.json();
+
+  document.getElementById("Balanca").innerText =
+    "💰 $" + (data.balance || 0);
+
+  return data.balance;
+}
+
+// initial load
+updateBalanceUI();
 
 </script>
 
