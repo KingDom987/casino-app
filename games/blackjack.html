@@ -203,19 +203,25 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
-  /* DEALERI MERR KARTA DERI SA E KALON LOJTARIN */
-  while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 21){
-    dealer.push(getCard());
+  /* NESE LOJTARI KA 21 - DEALER GJITHMON FITON */
+  if(playerTotal === 21){
+    dealer = ["A","K"];
+    render();
+    document.getElementById("result").innerHTML = "💀 DEALER BLACKJACK! DEALER WINS";
+    document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
+    return;
   }
 
-  /* NESE DEALER KALON 21 ZEVEND KARTËN E FUNDIT ME TË VOGËL */
-  while(getTotal(dealer) > 21){
-    dealer.pop();
-    dealer.push("2");
+  /* DEALERI MERR KARTA DERI SA E KALON LOJTARIN */
+  while(getTotal(dealer) <= playerTotal){
+    dealer.push(getCard());
+    if(getTotal(dealer) > 21){
+      dealer.pop();
+      dealer.push("2");
+    }
   }
 
   render();
-
   document.getElementById("result").innerHTML = "💀 DEALER WINS";
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 }
