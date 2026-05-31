@@ -71,13 +71,11 @@ async function loadBalance(){
 
 loadBalance();
 
-/* KARTA TE VOGLA PER DEALER - KURRE BUST */
 function getDealerCard(){
   let safe = ["2","3","4","5","6"];
   return safe[Math.floor(Math.random()*safe.length)];
 }
 
-/* KARTA TE MEDHA PER LOJTARIN - BUST SHPEJT */
 function getPlayerCard(){
   let big = ["10","J","Q","K"];
   return big[Math.floor(Math.random()*big.length)];
@@ -100,16 +98,17 @@ function render(){
   let pd = document.getElementById("playerCards");
   pd.innerHTML = "";
   player.forEach(c => { pd.innerHTML += `<div class="card">${c}</div>`; });
-
   let dd = document.getElementById("dealerCards");
   dd.innerHTML = "";
   dealer.forEach(c => { dd.innerHTML += `<div class="card">${c}</div>`; });
-
   document.getElementById("playerScore").innerText = "Score: " + getTotal(player);
   document.getElementById("dealerScore").innerText = "Score: " + getTotal(dealer);
 }
 
 async function startGame(){
+  /* MERR BALANCE NGA SERVERI PARA GJITHCKA */
+  await loadBalance();
+
   currentBet = parseInt(document.getElementById("betInput").value);
   if(!currentBet || currentBet <= 0){ alert("Enter valid bet"); return; }
   if(Balanca < currentBet){ alert("Not enough balance"); return; }
@@ -126,9 +125,7 @@ async function startGame(){
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
   gameActive = true;
-  /* LOJTARIT 2 KARTA TE MEDHA - SHPEJT BUST */
   player = [getPlayerCard(), getPlayerCard()];
-  /* DEALERIT 2 KARTA TE VOGLA */
   dealer = [getDealerCard(), getDealerCard()];
   document.getElementById("result").innerHTML = "";
   render();
@@ -136,7 +133,6 @@ async function startGame(){
 
 function hit(){
   if(!gameActive) return;
-  /* LOJTARIT KARTE TE MADHE - BUST */
   player.push(getPlayerCard());
   render();
   if(getTotal(player) > 21){
@@ -146,4 +142,17 @@ function hit(){
 }
 
 async function stand(){
-  if(!gameActive)
+  if(!gameActive) return;
+  gameActive = false;
+
+  while(getTotal(dealer) < 18){
+    dealer.push(getDealerCard());
+  }
+
+  render();
+  document.getElementById("result").innerHTML = "💀 DEALER WINS";
+  document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
+}
+</script>
+</body>
+</html>
