@@ -193,234 +193,127 @@ id="Balanca">
 
 <audio id="bgMusic" loop>
 
-<source src="sounds/love.mp3"
+<source src="/client/sounds/love.mp3"
 type="audio/mpeg">
 
 </audio>
 
 <script>
 
-/* RESET BALANCA */
+const API = "https://casino-app-production-d8ee.up.railway.app";
 
-localStorage.setItem("Balanca",0);
+let userData = localStorage.getItem("user");
+let user = null;
+try { user = JSON.parse(userData); } catch(e) { user = null; }
 
-/* BALANCA */
+let Balanca = 0;
 
-let Balanca =
-parseInt(
-localStorage.getItem(
-"Balanca"
-)
-);
+async function loadBalance(){
+  if(user && user._id){
+    const res = await fetch(API + "/balance/" + user._id);
+    const data = await res.json();
+    Balanca = data.balance || 0;
+    document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
+  }
+}
 
-document.getElementById(
-"Balanca"
-).innerText =
-"Balanca: $" + Balanca;
+loadBalance();
 
-/* SYMBOLS */
-
-const symbols =
-["🍒","🍋","🍊","🍉"];
-
-/* BUILD */
+const symbols = ["🍒","🍋","🍊","🍉"];
 
 function build(id){
-
-let el =
-document.getElementById(id);
-
-el.innerHTML = "";
-
-for(let i = 0; i < 20; i++){
-
-let div =
-document.createElement("div");
-
-div.className =
-"item";
-
-div.innerText =
-symbols[
-Math.floor(
-Math.random() *
-symbols.length
-)];
-
-el.appendChild(div);
-}
+  let el = document.getElementById(id);
+  el.innerHTML = "";
+  for(let i = 0; i < 20; i++){
+    let div = document.createElement("div");
+    div.className = "item";
+    div.innerText = symbols[Math.floor(Math.random() * symbols.length)];
+    el.appendChild(div);
+  }
 }
 
-/* INIT */
+["r1","r2","r3","r4"].forEach(build);
 
-["r1","r2","r3","r4"]
-.forEach(build);
-
-/* MUSIC */
-
-let music =
-document.getElementById(
-"bgMusic"
-);
-
+let music = document.getElementById("bgMusic");
 let musicOn = true;
-
 music.volume = 0.3;
-
-document.addEventListener(
-"click",
-() => {
-
-if(musicOn){
-
-music.play();
-}
-
-},
-{ once:true }
-);
-
-/* TOGGLE */
+document.addEventListener("click", () => { if(musicOn) music.play(); }, { once:true });
 
 function toggleMusic(){
-
-if(musicOn){
-
-music.pause();
-
-musicOn = false;
-
-document.getElementById(
-"musicBtn"
-).innerText =
-"🎵 MUSIC OFF";
-
-}else{
-
-music.play();
-
-musicOn = true;
-
-document.getElementById(
-"musicBtn"
-).innerText =
-"🎵 MUSIC ON";
+  if(musicOn){
+    music.pause();
+    musicOn = false;
+    document.getElementById("musicBtn").innerText = "🎵 MUSIC OFF";
+  }else{
+    music.play();
+    musicOn = true;
+    document.getElementById("musicBtn").innerText = "🎵 MUSIC ON";
+  }
 }
-}
-
-/* WIN RATE */
 
 function isWin(){
-
-return Math.random() < 0.000;
+  return Math.random() < 0.3;
 }
 
-/* SPIN */
+async function spin(){
+  let bet = parseInt(document.getElementById("customBet").value);
 
-function spin(){
+  if(!bet || bet <= 0){
+    alert("Enter valid bet");
+    return;
+  }
 
-let bet =
-parseInt(
-document.getElementById(
-"customBet"
-).value
-);
+  if(Balanca < bet){
+    alert("Not enough coins");
+    return;
+  }
 
-if(
-!bet ||
-bet <= 0
-){
+  const betRes = await fetch(API + "/bet", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ userId: user._id, amount: bet })
+  });
+  const betData = await betRes.json();
 
-alert(
-"Enter valid bet"
-);
+  if(!betData.success){
+    alert("Not enough balance");
+    return;
+  }
 
-return;
-}
+  Balanca = betData.balance;
+  document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
-if(Balanca < bet){
+  let reels = ["r1","r2","r3","r4"];
+  reels.forEach(id => {
+    build(id);
+    document.getElementById(id).style.transform = "translateY(-1200px)";
+  });
 
-alert(
-"Not enough coins"
-);
+  setTimeout(async () => {
+    reels.forEach(id => {
+      let el = document.getElementById(id);
+      el.style.transform = "translateY(0px)";
+      let symbol = symbols[Math.floor(Math.random() * symbols.length)];
+      el.innerHTML = `<div class="item">${symbol}</div>`;
+    });
 
-return;
-}
+    if(isWin()){
+      const winAmount = bet * 20;
+      const winRes = await fetch(API + "/win", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user._id, amount: winAmount })
+      });
+      const winData = await winRes.json();
+      Balanca = winData.balance;
+      alert("🎉 JACKPOT! YOU WON $" + winAmount);
+    }else{
+      alert("💀 LOST $" + bet);
+    }
 
-Balanca -= bet;
+    document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
-document.getElementById(
-"Balanca"
-).innerText =
-"Balanca: $" + Balanca;
-
-localStorage.setItem(
-"Balanca",
-Balanca
-);
-
-let reels =
-["r1","r2","r3","r4"];
-
-reels.forEach(id => {
-
-build(id);
-
-document.getElementById(id)
-.style.transform =
-"translateY(-1200px)";
-});
-
-setTimeout(() => {
-
-reels.forEach(id => {
-
-let el =
-document.getElementById(id);
-
-el.style.transform =
-"translateY(0px)";
-
-let symbol =
-symbols[
-Math.floor(
-Math.random() *
-symbols.length
-)];
-
-el.innerHTML =
-`<div class="item">
-${symbol}
-</div>`;
-});
-
-if(isWin()){
-
-Balanca += bet * 20;
-
-alert(
-"🎉 JACKPOT! YOU WON $" +
-(bet * 20)
-);
-
-}else{
-
-alert(
-"💀 LOST $" + bet
-);
-}
-
-document.getElementById(
-"Balanca"
-).innerText =
-"Balanca: $" + Balanca;
-
-localStorage.setItem(
-"Balanca",
-Balanca
-);
-
-},900);
+  }, 900);
 }
 
 </script>
