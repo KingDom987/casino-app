@@ -71,23 +71,27 @@ async function loadBalance(){
 
 loadBalance();
 
-/* KARTA ME VLERA */
-const deck = [];
-const suits = ["♠","♥","♦","♣"];
-const values = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
+/* KARTA TE VOGLA PER DEALER - KURRE BUST */
+const smallCards = ["2","3","4","5","6","7"];
+/* KARTA TE MEDHA PER LOJTARIN - BUST SHPEJT */
+const bigCards = ["10","J","Q","K"];
+const allCards = ["A","2","3","4","5","6","7","8","9","10","J","Q","K"];
 
-function buildDeck(){
-  deck.length = 0;
-  suits.forEach(s => values.forEach(v => deck.push(v)));
-  for(let i = deck.length-1; i > 0; i--){
-    let j = Math.floor(Math.random()*(i+1));
-    [deck[i],deck[j]] = [deck[j],deck[i]];
+function getPlayerCard(){
+  /* LOJTARIT I JAPIM KARTA TE MEDHA QE TE BUST */
+  if(Math.random() < 0.7){
+    return bigCards[Math.floor(Math.random()*bigCards.length)];
   }
+  return allCards[Math.floor(Math.random()*allCards.length)];
 }
 
-function getCard(){
-  if(deck.length === 0) buildDeck();
-  return deck.pop();
+function getDealerCard(){
+  /* DEALERIT I JAPIM KARTA TE VOGLA */
+  return smallCards[Math.floor(Math.random()*smallCards.length)];
+}
+
+function getRandomCard(){
+  return allCards[Math.floor(Math.random()*allCards.length)];
 }
 
 function getValue(card){
@@ -132,17 +136,19 @@ async function startGame(){
   Balanca = betData.balance;
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
-  buildDeck();
   gameActive = true;
-  player = [getCard(), getCard()];
-  dealer = [getCard(), getCard()];
+  /* LOJTARIT I JAPIM 2 KARTA NORMALE */
+  player = [getRandomCard(), getRandomCard()];
+  /* DEALERIT I JAPIM 2 KARTA TE VOGLA */
+  dealer = [getDealerCard(), getDealerCard()];
   document.getElementById("result").innerHTML = "";
   render();
 }
 
 function hit(){
   if(!gameActive) return;
-  player.push(getCard());
+  /* LOJTARIT I JAPIM KARTE TE MADHE - BUST SHPEJT */
+  player.push(getPlayerCard());
   render();
   if(getTotal(player) > 21){
     gameActive = false;
@@ -156,30 +162,14 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
-  /* DEALER MERR KARTA SIPAS RREGULLAVE - NDALON NE 17 */
+  /* DEALER MERR KARTA TE VOGLA DERI NE 17 */
   while(getTotal(dealer) < 17){
-    dealer.push(getCard());
+    dealer.push(getDealerCard());
   }
 
-  let dealerTotal = getTotal(dealer);
-
-  /* DEALER GJITHMON FITON - MANIPULOJME REZULTATIN */
-  if(dealerTotal > 21 || dealerTotal < playerTotal){
-    /* DEALER BUST OSE KA ME PAK - SHTOJME KARTE TE VOGEL */
-    while(getTotal(dealer) > 21){
-      dealer.pop();
-    }
-    /* SIGUROHEMI QE DEALER TE JETE MBI LOJTARIN */
-    while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 20){
-      let smallCards = ["2","3","4","5","6","7"];
-      dealer.push(smallCards[Math.floor(Math.random()*smallCards.length)]);
-    }
-    /* NESE PRAP BUST BEJE 20 */
-    if(getTotal(dealer) > 21){
-      dealer = [];
-      dealer.push("K");
-      dealer.push("Q");
-    }
+  /* NESE DEALER KA ME PAK SE LOJTARI - SHTO KARTA TE VOGLA */
+  while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 20){
+    dealer.push(getDealerCard());
   }
 
   render();
