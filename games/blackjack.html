@@ -51,7 +51,6 @@ box-shadow:0 0 15px rgba(255,255,255,0.2);
 
 .section{margin-top:25px;}
 .score{margin-top:10px;font-size:22px;color:gold;}
-
 .buttons{display:flex;gap:15px;margin-top:25px;flex-wrap:wrap;}
 
 button{
@@ -64,7 +63,6 @@ font-size:18px;font-weight:bold;cursor:pointer;transition:0.2s;
 .stand-btn{background:red;color:white;}
 
 button:hover{transform:scale(1.03);}
-
 #result{margin-top:25px;font-size:32px;font-weight:bold;}
 
 </style>
@@ -186,17 +184,13 @@ async function startGame(){
   dealer = [getCard(), getCard()];
   document.getElementById("result").innerHTML = "";
   render();
-  checkPlayerBust();
 }
 
 function hit(){
   if(!gameActive) return;
   player.push(getCard());
   render();
-  checkPlayerBust();
-}
 
-function checkPlayerBust(){
   if(getTotal(player) > 21){
     gameActive = false;
     document.getElementById("result").innerHTML = "💀 BUST! YOU LOST";
@@ -210,15 +204,13 @@ async function stand(){
   let playerTotal = getTotal(player);
 
   /* DEALERI ARRIN GJITHMON ME SHUM SE LOJTARI */
-  while(getTotal(dealer) <= playerTotal && getTotal(dealer) <= 21){
+  while(getTotal(dealer) <= playerTotal){
     dealer.push(getCard());
-  }
-
-  /* NESE DEALER BUST E RREGULLOJME */
-  while(getTotal(dealer) > 21){
-    dealer = dealer.slice(0, -1);
-    if(getTotal(dealer) <= playerTotal){
-      dealer.push("K");
+    if(getTotal(dealer) > 21){
+      /* NESE BUST ZEVEND ME KARTE TE VOGEL */
+      dealer.pop();
+      dealer.push("2");
+      break;
     }
   }
 
