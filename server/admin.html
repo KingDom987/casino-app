@@ -22,15 +22,18 @@
   <h2>Admin Panel 💰 Users List</h2>
   <button onclick="loadUsers()">LOAD USERS</button>
   <br><br>
-  <div id="users"></div>
+
+  <div id="users">Loading...</div>
 </div>
 
 <script>
 
 const API = "https://casino-app-production-d8ee.up.railway.app";
 
+/* LOGIN */
 function adminLogin() {
     const pass = document.getElementById("adminPass").value;
+
     if (pass === "sheik90") {
         document.getElementById("loginPage").style.display = "none";
         document.getElementById("adminPage").style.display = "block";
@@ -40,32 +43,63 @@ function adminLogin() {
     }
 }
 
+/* LOAD USERS (FIXED + SAFE) */
 async function loadUsers() {
-    const res = await fetch(API + "/users");
-    const users = await res.json();
 
-    let html = "";
+    try {
+        const res = await fetch(API + "/users");
+        const users = await res.json();
 
-    users.forEach(user => {
-        html += `
-        <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
-            <b>${user.username}</b><br>
-            Balance: $${user.balance}<br>
-            ID: ${user._id}<br><br>
+        console.log("USERS LOADED:", users);
 
-            <input id="a-${user._id}" placeholder="amount">
+        if (!Array.isArray(users)) {
+            document.getElementById("users").innerHTML =
+                "❌ Invalid response from server";
+            return;
+        }
 
-            <button onclick="addBalance('${user._id}')">+ ADD</button>
-            <button onclick="removeBalance('${user._id}')">- REMOVE</button>
-        </div>
-        `;
-    });
+        if (users.length === 0) {
+            document.getElementById("users").innerHTML =
+                "⚠️ No users found in database";
+            return;
+        }
 
-    document.getElementById("users").innerHTML = html;
+        let html = "";
+
+        users.forEach(user => {
+            html += `
+            <div style="background:#222;padding:10px;margin:10px;border-radius:10px;">
+                <b>${user.username}</b><br>
+                Balance: $${user.balance}<br>
+                ID: ${user._id}<br><br>
+
+                <input id="a-${user._id}" placeholder="amount" style="padding:5px;width:100px;">
+
+                <button onclick="addBalance('${user._id}')">+ ADD</button>
+                <button onclick="removeBalance('${user._id}')">- REMOVE</button>
+            </div>
+            `;
+        });
+
+        document.getElementById("users").innerHTML = html;
+
+    } catch (err) {
+        console.log("LOAD USERS ERROR:", err);
+
+        document.getElementById("users").innerHTML =
+            "❌ Error loading users (check API /users)";
+    }
 }
 
+/* ADD BALANCE */
 async function addBalance(userId) {
+
     let amount = document.getElementById("a-" + userId).value;
+
+    if (!amount || amount <= 0) {
+        alert("Invalid amount");
+        return;
+    }
 
     await fetch(API + "/admin/add-balance", {
         method: "POST",
@@ -79,8 +113,15 @@ async function addBalance(userId) {
     loadUsers();
 }
 
+/* REMOVE BALANCE */
 async function removeBalance(userId) {
+
     let amount = document.getElementById("a-" + userId).value;
+
+    if (!amount || amount <= 0) {
+        alert("Invalid amount");
+        return;
+    }
 
     await fetch(API + "/admin/remove-balance", {
         method: "POST",
