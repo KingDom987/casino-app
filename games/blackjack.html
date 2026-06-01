@@ -146,12 +146,15 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
+  /* DEALER MERR KARTA DERISA TE KALOJE LOJTARIN */
   while(getTotal(dealer) <= playerTotal){
     dealer.push(getDealerCard());
-    if(getTotal(dealer) > 21){
-      dealer.pop();
-      break;
-    }
+  }
+
+  /* NESE DEALER BUST - LARGO KARTËN E FUNDIT DHE SHTO 2 */
+  if(getTotal(dealer) > 21){
+    dealer.pop();
+    dealer.push("2");
   }
 
   render();
