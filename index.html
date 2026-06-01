@@ -3,156 +3,77 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Blackjack</title>
+<title>Imperium Casino</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:Arial,sans-serif;background:radial-gradient(circle at top,#1a1a1a,#000);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
-.box{width:100%;max-width:900px;background:rgba(20,20,20,0.95);padding:30px;border-radius:20px;box-shadow:0 0 40px rgba(255,215,0,0.25);text-align:center;}
-h1{color:gold;font-size:50px;margin-bottom:20px;text-shadow:0 0 20px gold;}
-.Balanca{font-size:22px;margin-bottom:20px;color:gold;}
-input{width:100%;padding:15px;border:none;border-radius:12px;font-size:18px;margin-bottom:20px;text-align:center;background:#222;color:white;}
-.cards{display:flex;justify-content:center;gap:15px;flex-wrap:wrap;margin:20px 0;}
-.card{width:90px;height:130px;background:white;border-radius:12px;display:flex;justify-content:center;align-items:center;font-size:32px;font-weight:bold;color:black;box-shadow:0 0 15px rgba(255,255,255,0.2);}
-.section{margin-top:25px;}
-.score{margin-top:10px;font-size:22px;color:gold;}
-.buttons{display:flex;gap:15px;margin-top:25px;flex-wrap:wrap;}
-button{flex:1;padding:15px;border:none;border-radius:12px;font-size:18px;font-weight:bold;cursor:pointer;transition:0.2s;}
-.start-btn{background:gold;color:black;}
-.hit-btn{background:limegreen;color:white;}
-.stand-btn{background:red;color:white;}
-button:hover{transform:scale(1.03);}
-#result{margin-top:25px;font-size:32px;font-weight:bold;}
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0d0d0d;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    flex-direction:column;
+}
+.container{display:flex;gap:40px;}
+.box{background:#1c1c1c;padding:25px;border-radius:15px;width:300px;}
+h2{text-align:center;color:gold;}
+input{width:100%;padding:12px;margin-top:10px;border:none;border-radius:8px;}
+button{width:100%;padding:12px;margin-top:15px;background:gold;border:none;border-radius:8px;cursor:pointer;font-weight:bold;}
+button:hover{background:orange;}
+#status{margin-top:20px;color:lightgreen;}
 </style>
 </head>
 <body>
+<h1 style="color:gold;">🎰 Imperium Casino</h1>
+<div class="container">
 <div class="box">
-<h1>🃏 BLACKJACK</h1>
-<div class="Balanca" id="Balanca">Balanca: $0</div>
-<input type="number" id="betInput" placeholder="Enter Bet Amount"/>
-<div class="section">
-  <h2>DEALER</h2>
-  <div class="cards" id="dealerCards"></div>
-  <div class="score" id="dealerScore"></div>
+<h2>REGISTER</h2>
+<input id="regUser" placeholder="Username">
+<input id="regPass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
 </div>
-<div class="section">
-  <h2>PLAYER</h2>
-  <div class="cards" id="playerCards"></div>
-  <div class="score" id="playerScore"></div>
+<div class="box">
+<h2>LOGIN</h2>
+<input id="logUser" placeholder="Username">
+<input id="logPass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
 </div>
-<div class="buttons">
-  <button class="start-btn" onclick="startGame()">START</button>
-  <button class="hit-btn" onclick="hit()">HIT</button>
-  <button class="stand-btn" onclick="stand()">STAND</button>
 </div>
-<div id="result"></div>
-</div>
-
+<div id="status"></div>
 <script>
 const API = "https://casino-app-production-d8ee.up.railway.app";
-
-let userData = localStorage.getItem("user");
-let user = null;
-try { user = JSON.parse(userData); } catch(e) { user = null; }
-
-let Balanca = 0;
-let player = [];
-let dealer = [];
-let gameActive = false;
-let currentBet = 0;
-
-async function loadBalance(){
-  if(user && user._id){
-    const res = await fetch(API + "/balance/" + user._id);
-    const data = await res.json();
-    Balanca = data.balance || 0;
-    document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
-  }
+function show(msg){ document.getElementById("status").innerText = msg; }
+async function register(){
+    try{
+        const username = document.getElementById("regUser").value;
+        const password = document.getElementById("regPass").value;
+        const res = await fetch(API + "/register", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({username, email:"", password})
+        });
+        const data = await res.json();
+        show(data.message);
+    }catch(err){ show("Server not running"); }
 }
-
-loadBalance();
-
-function getDealerCard(){
-  let safe = ["2","3","4","5","6"];
-  return safe[Math.floor(Math.random()*safe.length)];
-}
-
-function getPlayerCard(){
-  let big = ["10","J","Q","K"];
-  return big[Math.floor(Math.random()*big.length)];
-}
-
-function getValue(card){
-  if(card === "A") return 11;
-  if(["K","Q","J"].includes(card)) return 10;
-  return parseInt(card);
-}
-
-function getTotal(hand){
-  let total = 0, aces = 0;
-  hand.forEach(c => { total += getValue(c); if(c==="A") aces++; });
-  while(total > 21 && aces > 0){ total -= 10; aces--; }
-  return total;
-}
-
-function render(){
-  let pd = document.getElementById("playerCards");
-  pd.innerHTML = "";
-  player.forEach(c => { pd.innerHTML += `<div class="card">${c}</div>`; });
-
-  let dd = document.getElementById("dealerCards");
-  dd.innerHTML = "";
-  dealer.forEach(c => { dd.innerHTML += `<div class="card">${c}</div>`; });
-
-  document.getElementById("playerScore").innerText = "Score: " + getTotal(player);
-  document.getElementById("dealerScore").innerText = "Score: " + getTotal(dealer);
-}
-
-async function startGame(){
-  await loadBalance();
-
-  currentBet = parseInt(document.getElementById("betInput").value);
-  if(!currentBet || currentBet <= 0){ alert("Enter valid bet"); return; }
-  if(Balanca < currentBet){ alert("Not enough balance"); return; }
-
-  const betRes = await fetch(API + "/bet", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ userId: user._id, amount: currentBet })
-  });
-  const betData = await betRes.json();
-  if(!betData.success){ alert("Not enough balance"); return; }
-
-  Balanca = betData.balance;
-  document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
-
-  gameActive = true;
-  player = [getPlayerCard(), getPlayerCard()];
-  dealer = [getDealerCard(), getDealerCard()];
-  document.getElementById("result").innerHTML = "";
-  render();
-}
-
-function hit(){
-  if(!gameActive) return;
-  player.push(getPlayerCard());
-  render();
-  if(getTotal(player) > 21){
-    gameActive = false;
-    document.getElementById("result").innerHTML = "💀 BUST! YOU LOST";
-  }
-}
-
-async function stand(){
-  if(!gameActive) return;
-  gameActive = false;
-
-  while(getTotal(dealer) < 18){
-    dealer.push(getDealerCard());
-  }
-
-  render();
-  document.getElementById("result").innerHTML = "💀 DEALER WINS";
-  document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
+async function login(){
+    try{
+        const username = document.getElementById("logUser").value;
+        const password = document.getElementById("logPass").value;
+        const res = await fetch(API + "/login", {
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify({username, password})
+        });
+        const data = await res.json();
+        if(data.success){
+            localStorage.setItem("user", JSON.stringify(data.user));
+            localStorage.setItem("balance", data.user.balance || 0);
+            window.location.href = "dashboard.html";
+        }else{ show(data.message); }
+    }catch(err){ show("Server error"); }
 }
 </script>
 </body>

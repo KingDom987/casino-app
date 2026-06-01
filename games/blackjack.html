@@ -71,13 +71,11 @@ async function loadBalance(){
 
 loadBalance();
 
-/* DEALERIT VETEM KARTA 2-6 - KURRE BUST */
 function getDealerCard(){
   let safe = ["2","3","4","5","6"];
   return safe[Math.floor(Math.random()*safe.length)];
 }
 
-/* LOJTARIT VETEM 10,J,Q,K - BUST SHPEJT */
 function getPlayerCard(){
   let big = ["10","J","Q","K"];
   return big[Math.floor(Math.random()*big.length)];
@@ -146,15 +144,11 @@ async function stand(){
   if(!gameActive) return;
   gameActive = false;
 
-  /* DEALER MERR KARTA TE VOGLA */
-  while(getTotal(dealer) < 18){
-    dealer.push(getDealerCard());
-  }
+  let playerTotal = getTotal(player);
 
-  /* NESE DEALER BUST - LARGO KARTËN E FUNDIT DHE SHTO ME TE VOGEL */
-  while(getTotal(dealer) > 21){
-    dealer.pop();
-    dealer.push("2");
+  /* DEALER MERR KARTA DERISA TE KALOJE LOJTARIN - KURRE BUST */
+  while(getTotal(dealer) <= playerTotal){
+    dealer.push(getDealerCard());
   }
 
   render();
