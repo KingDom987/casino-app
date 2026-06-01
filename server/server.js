@@ -17,7 +17,7 @@ mongoose
   .catch((err) => console.log(err));
 
 app.get("/", (req, res) => {
-  res.send("Imperium Backend Running");
+  res.sendFile(path.join(__dirname, '..', 'index.html'));
 });
 
 /* REGISTER */
