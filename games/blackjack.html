@@ -77,8 +77,8 @@ function getDealerCard(){
 }
 
 function getPlayerCard(){
-  let big = ["10","J","Q","K"];
-  return big[Math.floor(Math.random()*big.length)];
+  let all = ["7","8","9","10","J","Q","K"];
+  return all[Math.floor(Math.random()*all.length)];
 }
 
 function getValue(card){
@@ -146,10 +146,8 @@ async function stand(){
 
   let playerTotal = getTotal(player);
 
-  /* DEALER MERR KARTA DERISA TE KALOJE LOJTARIN */
   while(getTotal(dealer) <= playerTotal){
     dealer.push(getDealerCard());
-    /* NESE BUST - LARGO KARTËN E FUNDIT */
     if(getTotal(dealer) > 21){
       dealer.pop();
       break;
