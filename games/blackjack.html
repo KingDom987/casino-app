@@ -71,14 +71,24 @@ async function loadBalance(){
 
 loadBalance();
 
+/* LOJTARIT KARTA QE JAPIN 14-19 */
+function getPlayerCard(){
+  let cards = ["7","8","9","10","J","Q","K"];
+  return cards[Math.floor(Math.random()*cards.length)];
+}
+
+/* LOJTARIT KARTE QE E BEN BUST DIREKTE */
+function getBustCard(currentTotal){
+  /* SHTO KARTE QE E KALON 21 */
+  let needed = 22 - currentTotal;
+  if(needed <= 10) return String(needed);
+  return "K";
+}
+
+/* DEALERIT KARTA TE VOGLA */
 function getDealerCard(){
   let safe = ["2","3","4","5","6"];
   return safe[Math.floor(Math.random()*safe.length)];
-}
-
-function getPlayerCard(){
-  let all = ["7","8","9","10","J","Q","K"];
-  return all[Math.floor(Math.random()*all.length)];
 }
 
 function getValue(card){
@@ -124,7 +134,11 @@ async function startGame(){
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 
   gameActive = true;
-  player = [getPlayerCard(), getPlayerCard()];
+
+  /* LOJTARI FILLON ME SCORE 14-19 */
+  let scores = [["7","7"],["8","7"],["9","7"],["9","8"],["10","7"],["10","9"]];
+  player = scores[Math.floor(Math.random()*scores.length)];
+
   dealer = [getDealerCard(), getDealerCard()];
   document.getElementById("result").innerHTML = "";
   render();
@@ -132,33 +146,33 @@ async function startGame(){
 
 function hit(){
   if(!gameActive) return;
-  player.push(getPlayerCard());
+
+  /* LOJTARIT I JAPIM KARTE QE E BEN BUST DIREKTE */
+  let currentTotal = getTotal(player);
+  let bustCard = getBustCard(currentTotal);
+  player.push(bustCard);
   render();
-  if(getTotal(player) > 21){
-    gameActive = false;
-    document.getElementById("result").innerHTML = "💀 BUST! YOU LOST";
-  }
+
+  gameActive = false;
+  document.getElementById("result").innerHTML = "💀 BUST! YOU LOST";
 }
 
 async function stand(){
   if(!gameActive) return;
   gameActive = false;
 
-  let playerTotal = getTotal(player);
-
-  /* DEALER MERR KARTA DERISA TE KALOJE LOJTARIN */
-  while(getTotal(dealer) <= playerTotal){
+  /* DEALER MERR KARTA DERI NE 21 */
+  while(getTotal(dealer) < 21){
     dealer.push(getDealerCard());
   }
 
-  /* NESE DEALER BUST - LARGO KARTËN E FUNDIT DHE SHTO 2 */
-  if(getTotal(dealer) > 21){
-    dealer.pop();
-    dealer.push("2");
-  }
+  /* NESE DEALER KA ME SHUME SE 21 - BEJE 21 */
+  dealer = [];
+  dealer.push("A");
+  dealer.push("K");
 
   render();
-  document.getElementById("result").innerHTML = "💀 DEALER WINS";
+  document.getElementById("result").innerHTML = "💀 DEALER WINS WITH 21!";
   document.getElementById("Balanca").innerText = "Balanca: $" + Balanca;
 }
 </script>
